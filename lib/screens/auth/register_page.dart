@@ -105,12 +105,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 final app = AppScope.of(context);
                 try {
                   if (app.firebaseReady) {
-                    final cred = await fb.FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: pass);
+                    final cred = await fb.FirebaseAuth.instance
+                        .createUserWithEmailAndPassword(email: email, password: pass);
                     await cred.user?.updateDisplayName(name);
                   } else {
                     app.register(name: name, email: email, password: pass);
                   }
-                  _showSnack('تم إنشاء الحساب بنجاح', color: Colors.green.shade600, icon: Icons.check_circle_outline);
+                  _showSnack('تم إنشاء الحساب بنجاح',
+                      color: Colors.green.shade600, icon: Icons.check_circle_outline);
                   if (!mounted) return;
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (_) => const HomeShell()),
@@ -131,12 +133,19 @@ class _RegisterPageState extends State<RegisterPage> {
                     case 'network-request-failed':
                       msg = 'خطأ اتصال بالشبكة';
                       break;
+                    case 'operation-not-allowed':
+                      msg = 'إنشاء حساب بالبريد غير مفعّل في Firebase Console';
+                      break;
                     default:
-                      msg = 'حدث خطأ أثناء إنشاء الحساب';
+                      msg = 'حدث خطأ أثناء إنشاء الحساب (${e.code})';
                   }
                   _showSnack(msg, color: Colors.red.shade600, icon: Icons.error_outline);
-                } catch (_) {
-                  _showSnack('تعذر إنشاء الحساب', color: Colors.red.shade600, icon: Icons.error_outline);
+                } catch (e) {
+                  _showSnack(
+                    'تعذر إنشاء الحساب: ${e.toString()}',
+                    color: Colors.red.shade600,
+                    icon: Icons.error_outline,
+                  );
                 } finally {
                   if (mounted) setState(() => submitting = false);
                 }

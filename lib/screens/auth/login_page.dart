@@ -98,11 +98,13 @@ class _LoginPageState extends State<LoginPage> {
                 final app = AppScope.of(context);
                 try {
                   if (app.firebaseReady) {
-                    await fb.FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: pass);
+                    await fb.FirebaseAuth.instance
+                        .signInWithEmailAndPassword(email: email, password: pass);
                   } else {
                     app.signIn(email: email, password: pass);
                   }
-                  _showSnack('تم تسجيل الدخول بنجاح', color: Colors.green.shade600, icon: Icons.check_circle_outline);
+                  _showSnack('تم تسجيل الدخول بنجاح',
+                      color: Colors.green.shade600, icon: Icons.check_circle_outline);
                   if (mounted) Navigator.pop(context);
                 } on fb.FirebaseAuthException catch (e) {
                   String msg;
@@ -122,12 +124,19 @@ class _LoginPageState extends State<LoginPage> {
                     case 'network-request-failed':
                       msg = 'خطأ اتصال بالشبكة';
                       break;
+                    case 'operation-not-allowed':
+                      msg = 'تسجيل الدخول بالبريد غير مفعّل في Firebase Console';
+                      break;
                     default:
-                      msg = 'حدث خطأ غير متوقع';
+                      msg = 'حدث خطأ غير متوقع (${e.code})';
                   }
                   _showSnack(msg, color: Colors.red.shade600, icon: Icons.error_outline);
-                } catch (_) {
-                  _showSnack('تعذر تسجيل الدخول', color: Colors.red.shade600, icon: Icons.error_outline);
+                } catch (e) {
+                  _showSnack(
+                    'تعذر تسجيل الدخول: ${e.toString()}',
+                    color: Colors.red.shade600,
+                    icon: Icons.error_outline,
+                  );
                 }
               },
               child: const Text('Sign in'),
