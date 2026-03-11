@@ -1,49 +1,41 @@
 import 'package:flutter/material.dart';
-import 'core/app_state.dart';
-import 'core/app_scope.dart';
-import 'screens/home_shell.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'core/app_theme.dart';
-import 'screens/onboarding/onboarding_page.dart';
+import 'providers/auth_provider.dart' as ap;
+import 'providers/hotel_provider.dart';
+import 'providers/booking_provider.dart';
+import 'providers/review_provider.dart';
+import 'theme/app_theme.dart';
+import 'app_router.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final state = AppState();
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    state.setFirebaseReady(true);
-  } catch (_) {
-    state.setFirebaseReady(false);
-  }
-  runApp(MyApp(state: state));
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarIconBrightness: Brightness.light));
+  runApp(const TravelMateApp());
 }
 
-class MyApp extends StatelessWidget {
-  final AppState? state;
-  const MyApp({super.key, this.state});
-
-  // This widget is the root of your application.
+class TravelMateApp extends StatelessWidget {
+  const TravelMateApp({super.key});
   @override
   Widget build(BuildContext context) {
-    final s = state ?? AppState();
-    return AppScope(
-      notifier: s,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ap.AuthProvider()),
+        ChangeNotifierProvider(create: (_) => HotelProvider()),
+        ChangeNotifierProvider(create: (_) => BookingProvider()),
+        ChangeNotifierProvider(create: (_) => ReviewProvider()),
+      ],
       child: MaterialApp(
         title: 'TravelMate',
-        theme: AppTheme.theme(),
-        home: const OnboardingPage(),
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: const AppRouter(),
       ),
     );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const HomeShell();
   }
 }

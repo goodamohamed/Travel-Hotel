@@ -1,0 +1,62 @@
+// ═══════════════════════════════════════════════════════════════════
+//  firestore.rules
+//  Paste this in: Firebase Console → Firestore → Rules tab
+// ═══════════════════════════════════════════════════════════════════
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper Functions ────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ── Hotels (public read, admin write) ───────────────────────
+    match /hotels/{hotelId} {
+      allow read: if true;                          // anyone can browse
+      allow write: if false;                        // only via Admin SDK / console
+    }
+
+    // ── Flights (public read) ────────────────────────────────────
+    match /flights/{flightId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ── Packages (public read) ───────────────────────────────────
+    match /packages/{packageId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ── Users (own profile only) ─────────────────────────────────
+    match /users/{userId} {
+      allow read:   if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // ── Bookings (own bookings only) ─────────────────────────────
+    match /bookings/{bookingId} {
+      allow read:   if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid
+                    && request.resource.data.userId == request.auth.uid;   // can't reassign
+      allow delete: if false;
+    }
+
+    // ── Reviews (public read, authenticated write own reviews) ───
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+  }
+}

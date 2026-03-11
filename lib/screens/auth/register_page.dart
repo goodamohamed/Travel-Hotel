@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import '../../core/app_scope.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/auth_provider.dart' as ap;
 import '../../shared/auth_scaffold.dart';
-import '../home_shell.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -17,6 +18,14 @@ class _RegisterPageState extends State<RegisterPage> {
   final formKey = GlobalKey<FormState>();
   bool obscure = true;
   bool submitting = false;
+
+  @override
+  void dispose() {
+    nameCtrl.dispose();
+    emailCtrl.dispose();
+    passCtrl.dispose();
+    super.dispose();
+  }
 
   void _showSnack(
     String message, {
@@ -46,6 +55,88 @@ class _RegisterPageState extends State<RegisterPage> {
       );
   }
 
+  Future<void> _signUp() async {
+    if (submitting) return;
+    final valid = formKey.currentState?.validate() ?? false;
+    if (!valid) {
+      _showSnack(
+        'رجاءً اكمل جميع البيانات بشكل صحيح',
+        color: Colors.red.shade600,
+        icon: Icons.error_outline,
+      );
+      return;
+    }
+
+    setState(() => submitting = true);
+    final name = nameCtrl.text.trim();
+    final email = emailCtrl.text.trim();
+    final pass = passCtrl.text;
+
+    _showSnack(
+      'جاري إنشاء الحساب...',
+      color: const Color(0xFF003B95),
+      icon: Icons.person_add_alt_1,
+      duration: const Duration(seconds: 2),
+    );
+
+    try {
+      final ok = await context.read<ap.AuthProvider>().signUp(
+            name: name,
+            email: email,
+            password: pass,
+          );
+
+      if (!mounted) return;
+      if (ok) {
+        _showSnack(
+          'تم إنشاء الحساب بنجاح',
+          color: Colors.green.shade600,
+          icon: Icons.check_circle_outline,
+        );
+
+        // AppRouter will automatically go to MainNavigation once authenticated.
+        Navigator.pop(context);
+      } else {
+        final msg = context.read<ap.AuthProvider>().errorMessage ?? 'تعذر إنشاء الحساب';
+        _showSnack(msg, color: Colors.red.shade600, icon: Icons.error_outline);
+      }
+    } on fb.FirebaseAuthException catch (e) {
+      String msg;
+      switch (e.code) {
+        case 'email-already-in-use':
+          msg = 'هذا البريد مستخدم بالفعل';
+          break;
+        case 'invalid-email':
+          msg = 'البريد الإلكتروني غير صالح';
+          break;
+        case 'weak-password':
+          msg = 'كلمة المرور ضعيفة، اختر كلمة أقوى';
+          break;
+        case 'network-request-failed':
+          msg = 'خطأ اتصال بالشبكة';
+          break;
+        case 'operation-not-allowed':
+          msg = 'إنشاء حساب بالبريد غير مفعّل في Firebase Console';
+          break;
+        default:
+          msg = 'حدث خطأ أثناء إنشاء الحساب (${e.code})';
+      }
+      if (mounted) {
+        _showSnack(msg, color: Colors.red.shade600, icon: Icons.error_outline);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnack(
+          'تعذر إنشاء الحساب: ${e.toString()}',
+          color: Colors.red.shade600,
+          icon: Icons.error_outline,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => submitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
@@ -59,7 +150,6 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: nameCtrl,
               decoration: const InputDecoration(
                 labelText: 'Name',
-                border: OutlineInputBorder(),
               ),
               validator: (v) => v == null || v.isEmpty ? 'Enter your name' : null,
             ),
@@ -69,7 +159,6 @@ class _RegisterPageState extends State<RegisterPage> {
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
                 labelText: 'Email',
-                border: OutlineInputBorder(),
               ),
               validator: (v) =>
                   v == null || v.isEmpty || !v.contains('@') ? 'Enter a valid email' : null,
@@ -80,7 +169,6 @@ class _RegisterPageState extends State<RegisterPage> {
               obscureText: obscure,
               decoration: InputDecoration(
                 labelText: 'Password',
-                border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   onPressed: () => setState(() => obscure = !obscure),
                   icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
@@ -89,68 +177,12 @@ class _RegisterPageState extends State<RegisterPage> {
               validator: (v) => v == null || v.length < 6 ? 'Min 6 characters' : null,
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () async {
-                if (submitting) return;
-                final valid = formKey.currentState!.validate();
-                if (!valid) {
-                  _showSnack('رجاءً اكمل جميع البيانات بشكل صحيح', color: Colors.red.shade600, icon: Icons.error_outline);
-                  return;
-                }
-                setState(() => submitting = true);
-                final name = nameCtrl.text.trim();
-                final email = emailCtrl.text.trim();
-                final pass = passCtrl.text;
-                _showSnack('جاري إنشاء الحساب...', color: const Color(0xFF003B95), icon: Icons.person_add_alt_1, duration: const Duration(seconds: 2));
-                final app = AppScope.of(context);
-                try {
-                  if (app.firebaseReady) {
-                    final cred = await fb.FirebaseAuth.instance
-                        .createUserWithEmailAndPassword(email: email, password: pass);
-                    await cred.user?.updateDisplayName(name);
-                  } else {
-                    app.register(name: name, email: email, password: pass);
-                  }
-                  _showSnack('تم إنشاء الحساب بنجاح',
-                      color: Colors.green.shade600, icon: Icons.check_circle_outline);
-                  if (!mounted) return;
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const HomeShell()),
-                    (_) => false,
-                  );
-                } on fb.FirebaseAuthException catch (e) {
-                  String msg;
-                  switch (e.code) {
-                    case 'email-already-in-use':
-                      msg = 'هذا البريد مستخدم بالفعل';
-                      break;
-                    case 'invalid-email':
-                      msg = 'البريد الإلكتروني غير صالح';
-                      break;
-                    case 'weak-password':
-                      msg = 'كلمة المرور ضعيفة، اختر كلمة أقوى';
-                      break;
-                    case 'network-request-failed':
-                      msg = 'خطأ اتصال بالشبكة';
-                      break;
-                    case 'operation-not-allowed':
-                      msg = 'إنشاء حساب بالبريد غير مفعّل في Firebase Console';
-                      break;
-                    default:
-                      msg = 'حدث خطأ أثناء إنشاء الحساب (${e.code})';
-                  }
-                  _showSnack(msg, color: Colors.red.shade600, icon: Icons.error_outline);
-                } catch (e) {
-                  _showSnack(
-                    'تعذر إنشاء الحساب: ${e.toString()}',
-                    color: Colors.red.shade600,
-                    icon: Icons.error_outline,
-                  );
-                } finally {
-                  if (mounted) setState(() => submitting = false);
-                }
-              },
-              child: const Text('Create account'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _signUp,
+                child: const Text('Create account'),
+              ),
             ),
           ],
         ),
@@ -158,3 +190,4 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
+
