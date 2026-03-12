@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../models/models.dart';
 import '../providers/auth_provider.dart' as ap;
+import '../providers/theme_provider.dart';
 import '../widgets/widgets.dart';
 import 'hotel_detail_screen.dart';
 
@@ -29,7 +30,7 @@ class _SearchScreenState extends State<SearchScreen>
   bool _showFilters = false;
 
   // Flight fields
-  String _fromLocation = 'Cairo (CAI)';
+  String _fromLocation = 'Cairo ';
   String _toLocation = 'Anywhere';
   DateTime? _flightDeparture;
   DateTime? _flightReturn;
@@ -91,8 +92,11 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   // بيرسم شاشة البحث بتاب الفنادق والطيران
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bg,
       body: NestedScrollView(
         headerSliverBuilder: (_, __) => [
           // ده الهيدر اللي فوق
@@ -214,12 +218,15 @@ class _SearchScreenState extends State<SearchScreen>
   // ده جزء الفنادق
   Widget _buildHotelsTab() {
     final auth = context.watch<ap.AuthProvider>();
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final cardBg = isDark ? const Color(0xFF1C1F2E) : Colors.white;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
 
     return Column(
       children: [
         // ده شريط البحث
         Container(
-          color: Colors.white,
+          color: cardBg,
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
           child: Row(
             children: [
@@ -253,7 +260,7 @@ class _SearchScreenState extends State<SearchScreen>
         // ده جزء العدد والترتيب
         if (_hasQuery || _showFilters)
           Container(
-            color: Colors.white,
+            color: cardBg,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
             child: Row(
               children: [
@@ -271,9 +278,9 @@ class _SearchScreenState extends State<SearchScreen>
                           fontWeight: FontWeight.w700)),
                 ),
                 const Spacer(),
-                const Text('Sort ',
+                Text('Sort ',
                     style: TextStyle(
-                        fontSize: 13, color: AppTheme.textSecondary)),
+                        fontSize: 13, color: textSec)),
                 DropdownButton<String>(
                   value: _sortBy,
                   underline: const SizedBox(),
@@ -283,6 +290,7 @@ class _SearchScreenState extends State<SearchScreen>
                       color: AppTheme.primary,
                       fontWeight: FontWeight.w700,
                       fontSize: 13),
+                  dropdownColor: cardBg,
                   items: const [
                     DropdownMenuItem(value: 'rating', child: Text('Top Rated')),
                     DropdownMenuItem(
@@ -307,6 +315,10 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Widget _buildDiscoverView(ap.AuthProvider auth) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 30),
       children: [
@@ -315,7 +327,7 @@ class _SearchScreenState extends State<SearchScreen>
             style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.textPrimary)),
+                color: textPri)),
         const SizedBox(height: 14),
         Wrap(
           spacing: 10,
@@ -341,10 +353,10 @@ class _SearchScreenState extends State<SearchScreen>
                 style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary)),
+                    color: textPri)),
             Text('${MockData.hotels.length} properties',
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 13)),
+                style: TextStyle(
+                    color: textSec, fontSize: 13)),
           ],
         ),
         const SizedBox(height: 14),
@@ -364,6 +376,10 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Widget _buildHotelResults(ap.AuthProvider auth) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+
     final hotels = _filteredHotels;
     if (hotels.isEmpty) {
       return Center(
@@ -381,14 +397,14 @@ class _SearchScreenState extends State<SearchScreen>
             ),
             const SizedBox(height: 16),
             Text('No results for "${_searchController.text}"',
-                style: const TextStyle(
+                style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
-                    color: AppTheme.textPrimary)),
+                    color: textPri)),
             const SizedBox(height: 6),
-            const Text('Try a different city or hotel name',
+            Text('Try a different city or hotel name',
                 style:
-                    TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                    TextStyle(color: textSec, fontSize: 13)),
           ],
         ),
       );
@@ -422,24 +438,31 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Widget _buildFiltersPanel() {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final cardBg = isDark ? const Color(0xFF1C1F2E) : Colors.white;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+
     return Container(
-      color: Colors.white,
+      color: cardBg,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Divider(height: 1),
+          Divider(height: 1, color: divColor),
           const SizedBox(height: 14),
 
           // Price
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Max price / night',
+              Text('Max price / night',
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      color: AppTheme.textPrimary)),
+                      color: textPri)),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -468,7 +491,7 @@ class _SearchScreenState extends State<SearchScreen>
               max: 1000,
               divisions: 19,
               activeColor: AppTheme.primary,
-              inactiveColor: AppTheme.divider,
+              inactiveColor: divColor,
               onChanged: (v) => setState(() => _maxPrice = v),
             ),
           ),
@@ -477,11 +500,11 @@ class _SearchScreenState extends State<SearchScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Min rating',
+              Text('Min rating',
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      color: AppTheme.textPrimary)),
+                      color: textPri)),
               Row(children: [
                 const Icon(Icons.star, color: AppTheme.starColor, size: 14),
                 const SizedBox(width: 3),
@@ -508,17 +531,17 @@ class _SearchScreenState extends State<SearchScreen>
               max: 5,
               divisions: 10,
               activeColor: AppTheme.starColor,
-              inactiveColor: AppTheme.divider,
+              inactiveColor: divColor,
               onChanged: (v) => setState(() => _minRating = v),
             ),
           ),
 
           // Stars
-          const Text('Stars',
+          Text('Stars',
               style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
-                  color: AppTheme.textPrimary)),
+                  color: textPri)),
           const SizedBox(height: 10),
           Row(
             children: [0, 3, 4, 5].map((s) {
@@ -532,12 +555,12 @@ class _SearchScreenState extends State<SearchScreen>
                       horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     gradient: active ? AppTheme.primaryGradient : null,
-                    color: active ? null : AppTheme.background,
+                    color: active ? null : bg,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                         color: active
                             ? AppTheme.primary
-                            : AppTheme.divider),
+                            : divColor),
                     boxShadow: active
                         ? [
                             BoxShadow(
@@ -552,7 +575,7 @@ class _SearchScreenState extends State<SearchScreen>
                     style: TextStyle(
                         color: active
                             ? Colors.white
-                            : AppTheme.textSecondary,
+                            : textSec,
                         fontWeight: FontWeight.w700,
                         fontSize: 13),
                   ),
@@ -566,16 +589,21 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
-  // ──────────────────────────────────────────────────────────────
   // FLIGHTS TAB
-  // ──────────────────────────────────────────────────────────────
+
   Widget _buildFlightsTab() {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final cardBg = isDark ? const Color(0xFF1C1F2E) : Colors.white;
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        // ── Search Form Card ───────────────────────────────────
+        // ── Search Form Card 
         Container(
-          color: Colors.white,
+          color: cardBg,
           padding: const EdgeInsets.all(18),
           child: Column(
             children: [
@@ -595,7 +623,7 @@ class _SearchScreenState extends State<SearchScreen>
                       ),
                       Container(
                           height: 1,
-                          color: AppTheme.divider,
+                          color: divColor,
                           margin: const EdgeInsets.only(left: 46)),
                       _LocationField(
                         icon: Icons.flight_land_rounded,
@@ -718,9 +746,9 @@ class _SearchScreenState extends State<SearchScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: AppTheme.background,
+                        color: bg,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppTheme.divider),
+                        border: Border.all(color: divColor),
                       ),
                       child: Row(
                         children: [
@@ -729,9 +757,9 @@ class _SearchScreenState extends State<SearchScreen>
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text('$_passengers passenger${_passengers > 1 ? 's' : ''}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 13,
-                                    color: AppTheme.textPrimary,
+                                    color: textPri,
                                     fontWeight: FontWeight.w500)),
                           ),
                           Row(children: [
@@ -759,9 +787,9 @@ class _SearchScreenState extends State<SearchScreen>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: AppTheme.background,
+                      color: bg,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.divider),
+                      border: Border.all(color: divColor),
                     ),
                     child: DropdownButton<String>(
                       value: _flightClass,
@@ -769,10 +797,11 @@ class _SearchScreenState extends State<SearchScreen>
                       isDense: true,
                       icon: const Icon(Icons.keyboard_arrow_down,
                           color: AppTheme.primary, size: 18),
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                      style: TextStyle(
+                          color: textPri,
                           fontSize: 13,
                           fontWeight: FontWeight.w500),
+                      dropdownColor: cardBg,
                       items: const [
                         DropdownMenuItem(
                             value: 'Economy',
@@ -827,7 +856,7 @@ class _SearchScreenState extends State<SearchScreen>
                   style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary)),
+                      color: textPri)),
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 4),
@@ -870,15 +899,21 @@ class _SearchScreenState extends State<SearchScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final isDark = ctx.watch<ThemeProvider>().isDarkMode;
+        final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+        final cardBg = isDark ? const Color(0xFF1C1F2E) : Colors.white;
+        final divColor = isDark ? Colors.white12 : AppTheme.divider;
+        final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+
         final media = MediaQuery.of(ctx);
         final maxHeight = media.size.height -
             media.viewPadding.top -
             media.viewInsets.bottom -
             48;
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           constraints: BoxConstraints(maxHeight: maxHeight),
           padding: EdgeInsets.only(
@@ -898,7 +933,7 @@ class _SearchScreenState extends State<SearchScreen>
                       height: 4,
                       margin: const EdgeInsets.only(bottom: 18),
                       decoration: BoxDecoration(
-                          color: AppTheme.divider,
+                          color: divColor,
                           borderRadius: BorderRadius.circular(2))),
                 ),
                 Row(children: [
@@ -932,13 +967,13 @@ class _SearchScreenState extends State<SearchScreen>
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide:
-                            const BorderSide(color: AppTheme.divider)),
+                            BorderSide(color: divColor)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: const BorderSide(
                             color: AppTheme.primary, width: 2)),
                     filled: true,
-                    fillColor: AppTheme.background,
+                    fillColor: bg,
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -946,7 +981,7 @@ class _SearchScreenState extends State<SearchScreen>
                     style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.textSecondary)),
+                        color: textSec)),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
@@ -1030,11 +1065,18 @@ class _SearchInputBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+    final textLight = isDark ? Colors.white38 : AppTheme.textLight;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.background,
+        color: bg,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.divider),
+        border: Border.all(color: divColor),
       ),
       child: TextField(
         controller: controller,
@@ -1042,14 +1084,14 @@ class _SearchInputBox extends StatelessWidget {
         onChanged: onChanged,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(
-              color: AppTheme.textLight, fontSize: 14),
+          hintStyle: TextStyle(
+              color: textLight, fontSize: 14),
           prefixIcon: const Icon(Icons.search_rounded,
               color: AppTheme.primary, size: 22),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.close_rounded,
-                      color: AppTheme.textSecondary, size: 18),
+                  icon: Icon(Icons.close_rounded,
+                      color: textSec, size: 18),
                   onPressed: onClear,
                 )
               : null,
@@ -1058,8 +1100,8 @@ class _SearchInputBox extends StatelessWidget {
           contentPadding:
               const EdgeInsets.symmetric(vertical: 14),
         ),
-        style: const TextStyle(
-            fontSize: 14, color: AppTheme.textPrimary),
+        style: TextStyle(
+            fontSize: 14, color: textPri),
       ),
     );
   }
@@ -1072,6 +1114,11 @@ class _FilterToggleBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1080,10 +1127,10 @@ class _FilterToggleBtn extends StatelessWidget {
         height: 48,
         decoration: BoxDecoration(
           gradient: active ? AppTheme.primaryGradient : null,
-          color: active ? null : AppTheme.background,
+          color: active ? null : bg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: active ? AppTheme.primary : AppTheme.divider),
+              color: active ? AppTheme.primary : divColor),
           boxShadow: active
               ? [
                   BoxShadow(
@@ -1097,7 +1144,7 @@ class _FilterToggleBtn extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             Icon(Icons.tune_rounded,
-                color: active ? Colors.white : AppTheme.textSecondary,
+                color: active ? Colors.white : textSec,
                 size: 22),
             if (active)
               Positioned(
@@ -1126,18 +1173,23 @@ class _TrendingChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final cardBg = isDark ? const Color(0xFF1C1F2E) : Colors.white;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardBg,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: AppTheme.divider),
+          border: Border.all(color: divColor),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: isDark ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2))
           ],
@@ -1148,10 +1200,10 @@ class _TrendingChip extends StatelessWidget {
             Text(emoji, style: const TextStyle(fontSize: 16)),
             const SizedBox(width: 6),
             Text(label,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary)),
+                    color: textPri)),
           ],
         ),
       ),
@@ -1176,6 +1228,10 @@ class _LocationField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textLight = isDark ? Colors.white38 : AppTheme.textLight;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1198,23 +1254,23 @@ class _LocationField extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 10,
-                          color: AppTheme.textLight,
+                          color: textLight,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5)),
                   const SizedBox(height: 2),
                   Text(value,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 15,
-                          color: AppTheme.textPrimary,
+                          color: textPri,
                           fontWeight: FontWeight.w700),
                       overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                color: AppTheme.textLight, size: 18),
+            Icon(Icons.chevron_right,
+                color: textLight, size: 18),
           ],
         ),
       ),
@@ -1242,6 +1298,12 @@ class _DateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textLight = isDark ? Colors.white38 : AppTheme.textLight;
+
     final hasDate = date != null;
     return GestureDetector(
       onTap: onTap,
@@ -1250,17 +1312,17 @@ class _DateField extends StatelessWidget {
         decoration: BoxDecoration(
           color: hasDate
               ? AppTheme.primary.withOpacity(0.05)
-              : AppTheme.background,
+              : bg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
               color: hasDate
                   ? AppTheme.primary.withOpacity(0.3)
-                  : AppTheme.divider),
+                  : divColor),
         ),
         child: Row(
           children: [
             Icon(icon,
-                color: hasDate ? AppTheme.primary : AppTheme.textLight,
+                color: hasDate ? AppTheme.primary : textLight,
                 size: 18),
             const SizedBox(width: 8),
             Expanded(
@@ -1272,7 +1334,7 @@ class _DateField extends StatelessWidget {
                           fontSize: 9,
                           color: hasDate
                               ? AppTheme.primary
-                              : AppTheme.textLight,
+                              : textLight,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5)),
                   const SizedBox(height: 2),
@@ -1284,8 +1346,8 @@ class _DateField extends StatelessWidget {
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: hasDate
-                            ? AppTheme.textPrimary
-                            : AppTheme.textLight),
+                            ? textPri
+                            : textLight),
                   ),
                 ],
               ),
@@ -1308,6 +1370,10 @@ class _CounterBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
+    final textLight = isDark ? Colors.white38 : AppTheme.textLight;
+
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Container(
@@ -1316,12 +1382,12 @@ class _CounterBtn extends StatelessWidget {
         decoration: BoxDecoration(
           color: enabled
               ? AppTheme.primary.withOpacity(0.1)
-              : AppTheme.divider,
+              : divColor,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon,
             size: 14,
-            color: enabled ? AppTheme.primary : AppTheme.textLight),
+            color: enabled ? AppTheme.primary : textLight),
       ),
     );
   }

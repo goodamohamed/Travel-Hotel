@@ -93,7 +93,7 @@ class BookingProvider extends ChangeNotifier {
         totalPrice: totalPrice,
         status: BookingStatus.confirmed,
         confirmationCode: confirmationCode,
-        createdAt: now,
+        createdAt: now, hotelImage: '', nights: 2,
       );
 
       final batch = _db.batch();
@@ -143,7 +143,7 @@ class BookingProvider extends ChangeNotifier {
           totalPrice: _bookings[index].totalPrice,
           status: BookingStatus.cancelled,
           confirmationCode: _bookings[index].confirmationCode,
-          createdAt: _bookings[index].createdAt,
+          createdAt: _bookings[index].createdAt, hotelImage: '', nights: 2,
         );
         notifyListeners();
       }
@@ -176,7 +176,7 @@ class BookingProvider extends ChangeNotifier {
           totalPrice: _bookings[index].totalPrice,
           status: BookingStatus.completed,
           confirmationCode: _bookings[index].confirmationCode,
-          createdAt: _bookings[index].createdAt,
+          createdAt: _bookings[index].createdAt, hotelImage: '', nights: 2,
         );
         notifyListeners();
       }

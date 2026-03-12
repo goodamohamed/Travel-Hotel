@@ -8,35 +8,39 @@ import 'wishlist_screen.dart';
 import 'profile_screen.dart';
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
+  final int initialIndex;
+  const MainNavigation({super.key, this.initialIndex = 0});
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _currentIndex = 0;
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    SearchScreen(),
-    BookingsScreen(),
-    WishlistScreen(),
-    ProfileScreen(),
-  ];
+  late int _currentIndex;
+  late final List<Widget> _screens;
+
   @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _screens = const [
+      HomeScreen(),
+      SearchScreen(),
+      BookingsScreen(),
+      WishlistScreen(),
+      ProfileScreen(),
+    ];
+  }
+
+  @override
+
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, -4))
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, -4))],
         ),
         child: SafeArea(
           child: Padding(
@@ -44,41 +48,11 @@ class _MainNavigationState extends State<MainNavigation> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _NavItem(
-                    icon: Icons.explore_outlined,
-                    activeIcon: Icons.explore,
-                    label: 'Explore',
-                    index: 0,
-                    currentIndex: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(
-                    icon: Icons.search_outlined,
-                    activeIcon: Icons.search,
-                    label: 'Search',
-                    index: 1,
-                    currentIndex: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(
-                    icon: Icons.luggage_outlined,
-                    activeIcon: Icons.luggage,
-                    label: 'Bookings',
-                    index: 2,
-                    currentIndex: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(
-                    icon: Icons.favorite_border,
-                    activeIcon: Icons.favorite,
-                    label: 'Wishlist',
-                    index: 3,
-                    currentIndex: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(
-                    icon: Icons.person_outline,
-                    activeIcon: Icons.person,
-                    label: 'Profile',
-                    index: 4,
-                    currentIndex: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(icon: Icons.explore_outlined, activeIcon: Icons.explore, label: 'Explore', index: 0, currentIndex: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(icon: Icons.search_outlined, activeIcon: Icons.search, label: 'Search', index: 1, currentIndex: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(icon: Icons.luggage_outlined, activeIcon: Icons.luggage, label: 'Bookings', index: 2, currentIndex: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(icon: Icons.favorite_border, activeIcon: Icons.favorite, label: 'Wishlist', index: 3, currentIndex: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile', index: 4, currentIndex: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
               ],
             ),
           ),
@@ -115,16 +89,13 @@ class _NavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color:
-              isActive ? AppTheme.primary.withOpacity(0.1) : Colors.transparent,
+          color: isActive ? AppTheme.primary.withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(isActive ? activeIcon : icon,
-                color: isActive ? AppTheme.primary : AppTheme.textSecondary,
-                size: 24),
+            Icon(isActive ? activeIcon : icon, color: isActive ? AppTheme.primary : AppTheme.textSecondary, size: 24),
             const SizedBox(height: 3),
             Text(
               label,

@@ -4,11 +4,12 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:travel_hotel_app/screens/bookings_screen.dart';
+import 'package:travel_hotel_app/screens/checkout_screen.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../providers/auth_provider.dart' as ap;
+import '../providers/theme_provider.dart';
 import '../widgets/widgets.dart';
 
 class HotelDetailScreen extends StatefulWidget {
@@ -39,14 +40,22 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<ap.AuthProvider>();
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+    final cardBg = isDark ? const Color(0xFF1C1F2E) : Colors.white;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+    final btnBg = isDark ? Colors.black.withOpacity(0.4) : Colors.white.withOpacity(0.9);
+
     _hotel.isWishlisted = auth.wishlistHotelIds.contains(_hotel.id);
     final reviews = MockData.getHotelReviews(_hotel.id);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bg,
       body: CustomScrollView(
         slivers: [
-          // ده جزء الصور اللي فوق
           SliverAppBar(
             expandedHeight: 320,
             pinned: true,
@@ -56,10 +65,10 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
               child: Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: btnBg,
                     shape: BoxShape.circle),
-                child: const Icon(Icons.arrow_back,
-                    color: AppTheme.textPrimary, size: 20),
+                child: Icon(Icons.arrow_back,
+                    color: textPri, size: 20),
               ),
             ),
             actions: [
@@ -81,7 +90,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                   margin: const EdgeInsets.all(8),
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: btnBg,
                       shape: BoxShape.circle),
                   child: Icon(
                     _hotel.isWishlisted
@@ -89,7 +98,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                         : Icons.favorite_border,
                     color: _hotel.isWishlisted
                         ? AppTheme.wishlistColor
-                        : AppTheme.textPrimary,
+                        : textPri,
                     size: 20,
                   ),
                 ),
@@ -98,10 +107,10 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                 margin: const EdgeInsets.all(8),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: btnBg,
                     shape: BoxShape.circle),
-                child: const Icon(Icons.share_outlined,
-                    color: AppTheme.textPrimary, size: 20),
+                child: Icon(Icons.share_outlined,
+                    color: textPri, size: 20),
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -115,21 +124,18 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                       imageUrl: _hotel.images[i],
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
-                          color: AppTheme.divider,
-                          child:
-                              const Center(child: CircularProgressIndicator())),
+                          color: divColor,
+                          child: const Center(child: CircularProgressIndicator())),
                       errorWidget: (_, __, ___) => Container(
-                          color: const Color(0xFFE8F0FE),
+                          color: isDark ? const Color(0xFF1C1F2E) : const Color(0xFFE8F0FE),
                           child: const Icon(Icons.hotel,
                               size: 80, color: AppTheme.primary)),
                     ),
                   ),
-                  // ده تدرّج تحت عشان الكلام يبان
                   Positioned.fill(
                       child: Container(
                           decoration: const BoxDecoration(
                               gradient: AppTheme.heroGradient))),
-                  // ده مؤشر الصور
                   Positioned(
                     bottom: 16,
                     left: 0,
@@ -148,7 +154,6 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                       ),
                     ),
                   ),
-                  // ده عدد الصور
                   Positioned(
                     bottom: 12,
                     right: 16,
@@ -168,16 +173,14 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
             ),
           ),
 
-          // ─── Content ────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Container(
-              color: AppTheme.background,
+              color: bg,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Hotel Overview ─────────────────────────────
                   Container(
-                    color: Colors.white,
+                    color: cardBg,
                     padding: const EdgeInsets.all(22),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +192,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                   style: GoogleFonts.playfairDisplay(
                                       fontSize: 22,
                                       fontWeight: FontWeight.w700,
-                                      color: AppTheme.textPrimary)),
+                                      color: textPri)),
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
@@ -199,10 +202,10 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                         fontSize: 24,
                                         fontWeight: FontWeight.w800,
                                         color: AppTheme.primary)),
-                                const Text('per night',
+                                Text('per night',
                                     style: TextStyle(
                                         fontSize: 12,
-                                        color: AppTheme.textSecondary)),
+                                        color: textSec)),
                               ],
                             ),
                           ],
@@ -214,8 +217,8 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                 color: AppTheme.accent, size: 16),
                             const SizedBox(width: 4),
                             Text('${_hotel.location}, ${_hotel.country}',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary,
+                                style: TextStyle(
+                                    color: textSec,
                                     fontSize: 13)),
                             const SizedBox(width: 12),
                             ...List.generate(
@@ -252,8 +255,8 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                   itemSize: 16,
                                 ),
                                 Text('${_hotel.reviewCount} reviews',
-                                    style: const TextStyle(
-                                        color: AppTheme.textSecondary,
+                                    style: TextStyle(
+                                        color: textSec,
                                         fontSize: 12)),
                               ],
                             ),
@@ -264,11 +267,11 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                             style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: AppTheme.textPrimary)),
+                                color: textPri)),
                         const SizedBox(height: 8),
                         Text(_hotel.description,
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary,
+                            style: TextStyle(
+                                color: textSec,
                                 fontSize: 14,
                                 height: 1.6)),
                       ],
@@ -277,9 +280,8 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
 
                   const SizedBox(height: 10),
 
-                  // ── Amenities ──────────────────────────────────
                   Container(
-                    color: Colors.white,
+                    color: cardBg,
                     padding: const EdgeInsets.all(22),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +290,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                             style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: AppTheme.textPrimary)),
+                                color: textPri)),
                         const SizedBox(height: 14),
                         Wrap(
                           spacing: 10,
@@ -303,9 +305,8 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
 
                   const SizedBox(height: 10),
 
-                  // ── Map Placeholder ────────────────────────────
                   Container(
-                    color: Colors.white,
+                    color: cardBg,
                     padding: const EdgeInsets.all(22),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,7 +315,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                             style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: AppTheme.textPrimary)),
+                                color: textPri)),
                         const SizedBox(height: 14),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(16),
@@ -322,17 +323,15 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                             height: 160,
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8F0FE),
+                              color: isDark ? const Color(0xFF0F1117) : const Color(0xFFE8F0FE),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
-                                // Map grid lines
                                 CustomPaint(
-                                    painter: _MapGridPainter(),
+                                    painter: _MapGridPainter(isDark: isDark),
                                     size: Size.infinite),
-                                // Pin
                                 Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -388,9 +387,9 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                             Flexible(
                                 child: Text(
                                     '${_hotel.location}, ${_hotel.country} • Lat: ${_hotel.lat}, Lng: ${_hotel.lng}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 12,
-                                        color: AppTheme.textSecondary))),
+                                        color: textSec))),
                           ],
                         ),
                       ],
@@ -399,9 +398,8 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
 
                   const SizedBox(height: 10),
 
-                  // ── Reviews ────────────────────────────────────
                   Container(
-                    color: Colors.white,
+                    color: cardBg,
                     padding: const EdgeInsets.all(22),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,9 +411,9 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                 style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
-                                    color: AppTheme.textPrimary)),
-                            Text('See all',
-                                style: const TextStyle(
+                                    color: textPri)),
+                            const Text('See all',
+                                style: TextStyle(
                                     color: AppTheme.primary,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 13)),
@@ -434,14 +432,13 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
           ),
         ],
       ),
-      // ── Booking CTA Bar ──────────────────────────────────────────
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardBg,
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: isDark ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.08),
                 blurRadius: 20,
                 offset: const Offset(0, -4))
           ],
@@ -452,9 +449,9 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Price per night',
-                    style:
-                        TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                Text('Price per night',
+                    style: TextStyle(
+                        color: textSec, fontSize: 12)),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -463,9 +460,9 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.primary)),
-                    const Text(' /night',
+                    Text(' /night',
                         style: TextStyle(
-                            fontSize: 13, color: AppTheme.textSecondary)),
+                            fontSize: 13, color: textSec)),
                   ],
                 ),
               ],
@@ -474,7 +471,8 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => BookingsScreen())),
+                    MaterialPageRoute(
+                        builder: (_) => CheckoutScreen(hotel: _hotel))),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -482,8 +480,8 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                   backgroundColor: AppTheme.primary,
                 ),
                 child: const Text('Book Now',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -499,11 +497,17 @@ class _ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+    final textLight = isDark ? Colors.white38 : AppTheme.textLight;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.background,
+        color: bg,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -524,12 +528,12 @@ class _ReviewCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(review.userName,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 14)),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 14, color: textPri)),
                     Text(
                         '${review.date.day}/${review.date.month}/${review.date.year}',
-                        style: const TextStyle(
-                            color: AppTheme.textLight, fontSize: 11)),
+                        style: TextStyle(
+                            color: textLight, fontSize: 11)),
                   ],
                 ),
               ),
@@ -544,8 +548,8 @@ class _ReviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(review.comment,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 13, height: 1.5)),
+              style: TextStyle(
+                  color: textSec, fontSize: 13, height: 1.5)),
         ],
       ),
     );
@@ -553,10 +557,13 @@ class _ReviewCard extends StatelessWidget {
 }
 
 class _MapGridPainter extends CustomPainter {
+  final bool isDark;
+  _MapGridPainter({required this.isDark});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.primary.withOpacity(0.1)
+      ..color = AppTheme.primary.withOpacity(isDark ? 0.3 : 0.1)
       ..strokeWidth = 1;
     for (double x = 0; x < size.width; x += 30) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
@@ -569,4 +576,3 @@ class _MapGridPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-

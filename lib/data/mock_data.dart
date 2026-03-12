@@ -252,7 +252,7 @@ class MockData {
       totalPrice: 2100,
       status: BookingStatus.confirmed,
       confirmationCode: 'TM-SAV-28491',
-      createdAt: DateTime(2025, 1, 20),
+      createdAt: DateTime(2025, 1, 20), hotelImage: '', nights: 2,
     ),
     Booking(
       id: 'b2',
@@ -267,7 +267,7 @@ class MockData {
       totalPrice: 870,
       status: BookingStatus.completed,
       confirmationCode: 'TM-DXB-11832',
-      createdAt: DateTime(2025, 2, 20),
+      createdAt: DateTime(2025, 2, 20), hotelImage: '', nights: 2,
     ),
     Booking(
       id: 'b3',
@@ -282,7 +282,7 @@ class MockData {
       totalPrice: 540,
       status: BookingStatus.pending,
       confirmationCode: 'TM-CAI-39023',
-      createdAt: DateTime(2025, 3, 1),
+      createdAt: DateTime(2025, 3, 1), hotelImage: '', nights: 2,
     ),
   ];
 

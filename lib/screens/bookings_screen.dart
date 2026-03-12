@@ -5,14 +5,14 @@ import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../providers/auth_provider.dart' as ap;
 import '../providers/booking_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/widgets.dart';
-import 'booking_details_screen.dart';
+import 'checkout_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
 
   @override
-  // بيربط الـ Widget بالـ State بتاع الشاشة
   State<BookingsScreen> createState() => _BookingsScreenState();
 }
 
@@ -21,20 +21,17 @@ class _BookingsScreenState extends State<BookingsScreen>
   late TabController _tabController;
 
   @override
-  // بنجهز التابات بتاعة الحجوزات
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
-  // بنقفل الكنترولر بتاع التابات
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
 
-  // بنفلتر الحجوزات حسب الحالة وبنرتبها بالأحدث
   List<Booking> _filterByStatus(
       List<Booking> bookings, List<BookingStatus> statuses) {
     final filtered =
@@ -44,54 +41,119 @@ class _BookingsScreenState extends State<BookingsScreen>
   }
 
   @override
-  // بيرسم شاشة الحجوزات مع التابات
   Widget build(BuildContext context) {
     final auth = context.watch<ap.AuthProvider>();
     final bookingProvider = context.read<BookingProvider>();
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bg = isDark ? const Color(0xFF0F1117) : AppTheme.background;
+    final cardBg = isDark ? const Color(0xFF1C1F2E) : Colors.white;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+    final divColor = isDark ? Colors.white12 : AppTheme.divider;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: cardBg,
         elevation: 0,
         title: Text('My Bookings',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.primary,
-          unselectedLabelColor: AppTheme.textSecondary,
-          indicatorColor: AppTheme.primary,
-          indicatorWeight: 3,
-          labelStyle:
-              GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13),
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Cancelled'),
-          ],
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: textPri)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: bg,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: divColor),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicator: BoxDecoration(
+                        gradient: AppTheme.primaryGradient,
+                        borderRadius: BorderRadius.circular(11),
+                        boxShadow: [
+                          BoxShadow(
+                              color: AppTheme.primary.withOpacity(0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2)),
+                        ],
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      dividerColor: Colors.transparent,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: textSec,
+                      labelStyle: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w700, fontSize: 13),
+                      unselectedLabelStyle: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500, fontSize: 13),
+                      tabs: const [
+                        Tab(text: 'Upcoming'),
+                        Tab(text: 'Completed'),
+                        Tab(text: 'Cancelled'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    // Navigate to CheckoutScreen, passing a fallback hotel since BookingsScreen isn't tied to one.
+                    final fallbackHotel = Hotel(
+                      id: 'h1',
+                      name: 'Azure Santorini Resort',
+                      location: 'Santorini',
+                      country: 'Greece',
+                      description: 'A beautiful resort fallback.',
+                      pricePerNight: 420,
+                      rating: 4.9,
+                      reviewCount: 1876,
+                      stars: 5,
+                      images: [
+                        'https://images.unsplash.com/photo-1570077188670-e3a8d69ac542?w=800'
+                      ],
+                      amenities: ['Pool', 'Spa', 'Free Wifi'],
+                      lat: 36.3932,
+                      lng: 25.4615,
+                    );
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                    CheckoutScreen(hotel: fallbackHotel)));
+                  },
+                  child: Container(
+                    height: 44,
+                    width: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+                    ),
+                    child: const Icon(Icons.swap_horiz_rounded,
+                        color: AppTheme.primary, size: 22),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: auth.isAuthenticated
           ? StreamBuilder<List<Booking>>(
-              stream: bookingProvider.bookingsStream(auth.userId),
-              builder: (context, snap) {
-                if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+              stream: bookingProvider.bookingsStream(auth.userId!),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
                 }
-                if (snap.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Failed to load bookings.\n${snap.error}',
-                        textAlign: TextAlign.center,
-                        style:
-                            const TextStyle(color: AppTheme.textSecondary),
-                      ),
-                    ),
-                  );
-                }
-                final bookings = snap.data ?? const <Booking>[];
+
+                final bookings = snapshot.data ?? [];
+
                 return TabBarView(
                   controller: _tabController,
                   children: [
@@ -105,17 +167,20 @@ class _BookingsScreenState extends State<BookingsScreen>
                 );
               },
             )
-          : const Center(
+          : Center(
               child: Text(
                 'Please sign in to see your bookings',
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: textSec),
               ),
             ),
     );
   }
 
-  // بيرسم ليست الحجوزات أو رسالة لو مفيش
   Widget _buildBookingList(List<Booking> bookings) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final textPri = isDark ? Colors.white : AppTheme.textPrimary;
+    final textSec = isDark ? Colors.white60 : AppTheme.textSecondary;
+
     if (bookings.isEmpty) {
       return Center(
         child: Column(
@@ -131,16 +196,16 @@ class _BookingsScreenState extends State<BookingsScreen>
                   color: AppTheme.primary, size: 36),
             ),
             const SizedBox(height: 16),
-            const Text('No bookings here',
+            Text('No bookings here',
                 style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
-                    color: AppTheme.textPrimary)),
+                    color: textPri)),
             const SizedBox(height: 6),
-            const Text('Start exploring and book your next adventure!',
+            Text('Start exploring and book your next adventure!',
                 textAlign: TextAlign.center,
                 style:
-                    TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                    TextStyle(color: textSec, fontSize: 13)),
           ],
         ),
       );
@@ -153,7 +218,8 @@ class _BookingsScreenState extends State<BookingsScreen>
   }
 }
 
-// ده كارت الحجز اللي بيظهر في الليست
+// Booking Card
+
 class _BookingCard extends StatelessWidget {
   final Booking booking;
   const _BookingCard({required this.booking});
@@ -164,7 +230,6 @@ class _BookingCard extends StatelessWidget {
   ];
 
   @override
-  // بيرسم كارت واحد للحجز
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
@@ -180,7 +245,7 @@ class _BookingCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // ده الهيدر بتاع الكارت
+          // ── Gradient header
           Container(
             padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
             decoration: const BoxDecoration(
@@ -233,12 +298,12 @@ class _BookingCard extends StatelessWidget {
             ),
           ),
 
-          // ده جسم الكارت
+          // ── Body 
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
             child: Column(
               children: [
-                // ده جزء التواريخ
+                // ── Dates card
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -360,27 +425,53 @@ class _BookingCard extends StatelessWidget {
 
                 const SizedBox(height: 14),
 
-                // ده جزء معلومات سريعة
+                // ── Info chips
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Flexible(
-                      child: _PillChip(
-                        icon: Icons.people_outline,
-                        label: '${booking.guests} guests',
-                        color: AppTheme.primary,
-                      ),
+                    // Guests chip
+                    _PillChip(
+                      icon: Icons.people_outline,
+                      label: '${booking.guests} guests',
+                      color: AppTheme.primary,
                     ),
                     const SizedBox(width: 8),
-                    Flexible(
-                      child: _PillChip(
-                        icon: Icons.confirmation_number_outlined,
-                        label: booking.confirmationCode,
-                        color: AppTheme.success,
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppTheme.success.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: AppTheme.success.withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                                Icons.confirmation_number_outlined,
+                                size: 13,
+                                color: AppTheme.success),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                booking.confirmationCode,
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppTheme.success,
+                                    fontWeight: FontWeight.w600),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
+                    // Total price
                     Column(
-                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         const Text('Total paid',
@@ -396,7 +487,7 @@ class _BookingCard extends StatelessWidget {
                   ],
                 ),
 
-                // ده أزرار الأكشن
+                // ── Action buttons ──────────────────────────────────
                 if (booking.status == BookingStatus.confirmed ||
                     booking.status == BookingStatus.pending) ...[
                   const SizedBox(height: 16),
@@ -424,19 +515,7 @@ class _BookingCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Expanded(
-                        child: _ViewDetailsButton(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    BookingDetailsScreen(booking: booking),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                      const Expanded(child: _ViewDetailsButton()),
                     ],
                   ),
 
@@ -627,8 +706,7 @@ class _CancelButtonState extends State<_CancelButton>
 }
 
 class _ViewDetailsButton extends StatefulWidget {
-  final VoidCallback onTap;
-  const _ViewDetailsButton({required this.onTap});
+  const _ViewDetailsButton();
   @override
   State<_ViewDetailsButton> createState() => _ViewDetailsButtonState();
 }
@@ -657,10 +735,7 @@ class _ViewDetailsButtonState extends State<_ViewDetailsButton>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => _ctrl.forward(),
-      onTapUp: (_) {
-        _ctrl.reverse();
-        widget.onTap();
-      },
+      onTapUp: (_) => _ctrl.reverse(),
       onTapCancel: () => _ctrl.reverse(),
       child: ScaleTransition(
         scale: _scale,
@@ -771,12 +846,10 @@ class _PillChip extends StatelessWidget {
         children: [
           Icon(icon, size: 13, color: color),
           const SizedBox(width: 5),
-          Flexible(
-            child: Text(label,
-                style: TextStyle(
-                    fontSize: 11, color: color, fontWeight: FontWeight.w600),
-                overflow: TextOverflow.ellipsis),
-          ),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 11, color: color, fontWeight: FontWeight.w600),
+              overflow: TextOverflow.ellipsis),
         ],
       ),
     );

@@ -7,6 +7,7 @@ import 'providers/auth_provider.dart' as ap;
 import 'providers/hotel_provider.dart';
 import 'providers/booking_provider.dart';
 import 'providers/review_provider.dart';
+import 'providers/theme_provider.dart';
 import 'theme/app_theme.dart';
 import 'app_router.dart';
 
@@ -15,7 +16,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarIconBrightness: Brightness.light));
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light));
   runApp(const TravelMateApp());
 }
 
@@ -29,13 +32,19 @@ class TravelMateApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => HotelProvider()),
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        title: 'TravelMate',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const AppRouter(),
-      ),
+      child: Builder(builder: (context) {
+        final themeProvider = context.watch<ThemeProvider>();
+        return MaterialApp(
+          title: 'TravelMate',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeProvider.themeMode,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          home: const AppRouter(),
+        );
+      }),
     );
   }
 }

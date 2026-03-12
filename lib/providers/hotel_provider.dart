@@ -46,14 +46,14 @@ class HotelProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── Real-time Stream ─────────────────────────────────────────────
+  //Real-time Stream
   Stream<List<Hotel>> hotelsStream() {
     return _db.collection('hotels').snapshots().map(
       (snap) => snap.docs.map((d) => Hotel.fromFirestore(d)).toList(),
     );
   }
 
-  // ─── Get Single Hotel ─────────────────────────────────────────────
+  //Get Single Hotel 
   Future<Hotel?> getHotelById(String id) async {
     try {
       final doc = await _db.collection('hotels').doc(id).get();
